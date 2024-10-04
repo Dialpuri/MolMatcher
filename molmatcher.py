@@ -7,6 +7,7 @@ import gemmi
 import numpy as np
 import networkx as nx
 
+
 def create_single_residue(structure: gemmi.Structure) -> gemmi.Structure:
     """
     Creates a single residue structure where all atoms are in one residue.
@@ -36,8 +37,8 @@ def move_to_centroid(structure: gemmi.Structure) -> gemmi.Structure:
     :return: Modified structure
     """
     centroid = np.mean([a.pos.tolist() for a in structure[0][0][0]], axis=0)
-    center = np.array([50,50,50])
-    delta = center-centroid
+    center = np.array([50, 50, 50])
+    delta = center - centroid
     for model in structure:
         for chain in model:
             for residue in chain:
@@ -70,7 +71,7 @@ def get_adjacency_matrix(structure) -> Tuple[np.ndarray, List[str]]:
                         data.add(linear_key)
 
     Xs, Ys = list(zip(*data))
-    max_length = max(Xs + Ys)+1
+    max_length = max(Xs + Ys) + 1
 
     # Create adj mat
     adjacency_matrix = np.zeros((max_length, max_length))
@@ -82,14 +83,19 @@ def get_adjacency_matrix(structure) -> Tuple[np.ndarray, List[str]]:
 
     return adjacency_matrix, keys
 
-def label(labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Structure) -> gemmi.Structure:
+
+def label(
+    labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Structure
+) -> gemmi.Structure:
     """
     Labels the unlabelled structure according to the given labelled structure.
     :param labelled_structure: Structure with atom names
     :param unlabelled_structure: Structure without atom names
     :return: Structure with atom names
     """
-    cell = gemmi.UnitCell(100,100,100,90,90,90) # If any residue is > 100A in length (that's crazy) then bump this
+    cell = gemmi.UnitCell(
+        100, 100, 100, 90, 90, 90
+    )  # If any residue is > 100A in length (that's crazy) then bump this
 
     labelled_structure = create_single_residue(labelled_structure)
     labelled_structure.cell = cell
@@ -106,16 +112,17 @@ def label(labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Struc
     G2 = nx.from_numpy_array(s)
 
     # Assign label to nodes where labels are the element
+    label_key = "label"
     for i, node in enumerate(G1.nodes):
-        G1.nodes[node]['label'] = kl[i]
+        G1.nodes[node][label_key] = kl[i]
 
     for i, node in enumerate(G2.nodes):
-        G2.nodes[node]['label'] = ks[i]
+        G2.nodes[node][label_key] = ks[i]
 
     # Fun graph matching code (don't mess)
     def check_label_match(mapping):
         for n2, n1 in mapping.items():
-            if G2.nodes[n2]['label'] != G1.nodes[n1]['label']:
+            if G2.nodes[n2][label_key] != G1.nodes[n1][label_key]:
                 return False
         return True
 
@@ -127,7 +134,9 @@ def label(labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Struc
     if not all_mappings:
         raise RuntimeError("No isomorphisms found")
 
-    label_matching_mappings = [mapping for mapping in all_mappings if check_label_match(mapping)]
+    label_matching_mappings = [
+        mapping for mapping in all_mappings if check_label_match(mapping)
+    ]
     if not label_matching_mappings:
         raise RuntimeError("No label matching mappings found")
 
@@ -137,6 +146,7 @@ def label(labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Struc
 
     return unlabelled_structure
 
+
 def main():
     reference_structure = gemmi.read_structure("labelled.pdb")
     unlabelled_structure = gemmi.read_structure("stripped.pdb")
@@ -145,5 +155,5 @@ def main():
     labelled_structure.write_pdb("relabelled.pdb")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
