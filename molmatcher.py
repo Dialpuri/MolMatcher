@@ -73,14 +73,14 @@ def get_adjacency_matrix(structure) -> Tuple[np.ndarray, List[str]]:
     max_length = max(Xs + Ys)+1
 
     # Create adj mat
-    l = np.zeros((max_length, max_length))
+    adjacency_matrix = np.zeros((max_length, max_length))
 
     for linear_key in data:
-        l[linear_key[0], linear_key[1]] = 1
+        adjacency_matrix[linear_key[0], linear_key[1]] = 1
 
     keys = [structure[0][0][0][i].element.name for i in range(0, max_length)]
 
-    return l, keys
+    return adjacency_matrix, keys
 
 def label(labelled_structure: gemmi.Structure, unlabelled_structure: gemmi.Structure) -> gemmi.Structure:
     """
